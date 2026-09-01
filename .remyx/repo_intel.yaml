@@ -1,0 +1,18 @@
+schema_version: 1
+fork: salma-remyx/SkillSpector
+observed_landing_zones:
+- path: scripts/
+  shape_tags:
+  - library-shape-public-api
+  confirmed_by:
+  - arxiv: 2608.19901v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "(none) \u2014 an operator-run harness invoked as `python\
+      \ scripts/bench_eval.py ...`; its scan stage drives the pre-existing `skillspector.cli\
+      \ scan` console entry point per case and its manifests are consum"
+    branch: maliciousskillbench-a-comprehensive-benchmark-for-malicious-
+    timestamp: '2026-09-01T02:06:32Z'
+  last_observed: '2026-09-01T02:06:32Z'
+rejected_shapes: []
+coordination_signals: []
+last_updated: '2026-09-01T02:06:32Z'
