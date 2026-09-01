@@ -832,3 +832,45 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/NVIDIA/skillspector/issues)
+
+## Benchmark Evaluation (bench_eval)
+
+`scripts/bench_eval.py` measures malicious-Skill detection on a labeled
+benchmark corpus. It reports the joint operating point — malicious recall and
+benign false-positive rate together with macro-F1, per-attack-category recall,
+and per-source (source-disjoint) folds — instead of a single accuracy number.
+The evaluation protocol is adapted from "MaliciousSkillBench: A Comprehensive
+Benchmark for Malicious Agent Skill Detection" (arXiv:2608.19901).
+
+The benchmark stays an external input (one JSON object per line):
+
+```json
+{"id": "msb-0001", "label": "malicious", "attack_category": "prompt_injection",
+ "source": "catalog-a", "skill_text": "# skill instructions"}
+{"id": "msb-9001", "label": "benign", "source": "catalog-b",
+ "skill_text": "# skill instructions", "files": {"scripts/run.sh": "echo hi"}}
+```
+
+Materialize an accuracy-gate corpus and manifest, scan every case with the
+installed CLI, then score the reports:
+
+```bash
+python scripts/bench_eval.py materialize \
+  --records bench.jsonl --corpus-root corpus/ --manifest bench-manifest.json \
+  --category-rules category-rules.json
+python scripts/bench_eval.py scan --corpus-root corpus/ --reports reports/
+python scripts/bench_eval.py score --records bench.jsonl --reports reports/ \
+  --output bench-metrics.json
+```
+
+Notes:
+
+- Malicious records need pinned `expected_rules` — on the record itself, or via
+  `--category-rules` — so the zero-tolerance accuracy gate scores a missed
+  detection as a false negative instead of scoring every hit as a false
+  positive. Benign records are always zero-tolerance.
+- The emitted manifest uses the `scripts/compare_scan_accuracy.py` schema, so
+  benchmark corpora run through the same accuracy gate as adjudicated corpora.
+- SkillSpector is static, so its per-source scores are its source-disjoint
+  generalization numbers. Sweep `--threshold` and `--rules` on `score` to
+  trace the recall-versus-over-flagging operating curve.
